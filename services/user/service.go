@@ -11,7 +11,7 @@ import (
 // Service user
 type Service interface {
 	FindOne(id string) (*User, error)
-	// All(limit int, offset int) ([]*User, error)
+	All(limit int, offset int) ([]*User, error)
 	Create(*User) error
 }
 
@@ -50,7 +50,7 @@ func (s *mongoService) All(limit int, offset int) ([]*User, error) {
 			"$limit": limit,
 		},
 		{
-			"$offset": offset,
+			"$skip": offset,
 		},
 	})
 
@@ -73,6 +73,8 @@ func (s *mongoService) All(limit int, offset int) ([]*User, error) {
 }
 
 // Create ...
-func (s *mongoService) Create(*User) error {
-	return nil
+func (s *mongoService) Create(u *User) error {
+	u.ID = primitive.NewObjectID()
+	_, err := s.collection().InsertOne(context.TODO(), u)
+	return err
 }
