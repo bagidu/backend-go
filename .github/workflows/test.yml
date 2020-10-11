@@ -26,4 +26,4 @@ jobs:
       run: go mod download
 
     - name: Test
-      run: go test -v ./...
+      run: go test ./... -coverprofile=c.out && go tool cover -func=c.out
