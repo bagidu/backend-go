@@ -5,18 +5,47 @@ package resolver
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/bagiduid/backend/http/graphql/generated"
-	model1 "github.com/bagiduid/backend/models"
+	"github.com/bagiduid/backend/models"
+	"github.com/bagiduid/backend/services/user"
 )
 
-func (r *mutationResolver) Register(ctx context.Context, input model1.RegisterUser) (*model1.User, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *mutationResolver) Register(ctx context.Context, input models.RegisterUser) (*models.User, error) {
+	u := user.User{
+		Name:     input.Name,
+		Email:    input.Email,
+		Username: input.Username,
+		Password: input.Password,
+	}
+	if err := r.UserService.Create(&u); err != nil {
+		return nil, err
+	}
+
+	return &models.User{
+		ID:       u.ID.Hex(),
+		Name:     u.Name,
+		Email:    u.Email,
+		Username: u.Username,
+	}, nil
 }
 
-func (r *queryResolver) Users(ctx context.Context) ([]*model1.User, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *queryResolver) Users(ctx context.Context, limit int, offset int) ([]*models.User, error) {
+	res, err := r.UserService.All(limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	var users []*models.User
+
+	for _, u := range res {
+		users = append(users, &models.User{
+			ID:       u.ID.Hex(),
+			Email:    u.Email,
+			Name:     u.Name,
+			Username: u.Username,
+		})
+	}
+	return users, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.

@@ -48,10 +48,10 @@ func (s *mongoService) FindOne(id string) (*User, error) {
 func (s *mongoService) All(limit int, offset int) ([]*User, error) {
 	res, err := s.collection().Aggregate(context.TODO(), []bson.M{
 		{
-			"$limit": limit,
+			"$skip": offset,
 		},
 		{
-			"$skip": offset,
+			"$limit": limit,
 		},
 	})
 
@@ -94,7 +94,11 @@ func (s *mongoService) Create(u *User) error {
 		return errors.New("User already exists with same email or username")
 	}
 
+	// New ID
 	u.ID = primitive.NewObjectID()
+
+	// Hash Password
+	u.HashPassword()
 	if _, err := s.collection().InsertOne(context.TODO(), u); err != nil {
 		return err
 	}

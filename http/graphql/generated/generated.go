@@ -48,7 +48,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Users func(childComplexity int) int
+		Users func(childComplexity int, limit int, offset int) int
 	}
 
 	User struct {
@@ -63,7 +63,7 @@ type MutationResolver interface {
 	Register(ctx context.Context, input models.RegisterUser) (*models.User, error)
 }
 type QueryResolver interface {
-	Users(ctx context.Context) ([]*models.User, error)
+	Users(ctx context.Context, limit int, offset int) ([]*models.User, error)
 }
 
 type executableSchema struct {
@@ -98,7 +98,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.Users(childComplexity), true
+		args, err := ec.field_Query_users_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Users(childComplexity, args["limit"].(int), args["offset"].(int)), true
 
 	case "User.email":
 		if e.complexity.User.Email == nil {
@@ -193,7 +198,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 
 var sources = []*ast.Source{
 	{Name: "http/graphql/schema/root.graphqls", Input: `type Query {
-  users: [User!]!
+  users(limit: Int!, offset: Int!): [User!]!
 }
 
 type Mutation {
@@ -210,6 +215,7 @@ input RegisterUser {
     name: String!
     username: String!
     email: String!
+    password: String!
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -245,6 +251,30 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_users_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["limit"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["limit"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["offset"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("offset"))
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["offset"] = arg1
 	return args, nil
 }
 
@@ -344,9 +374,16 @@ func (ec *executionContext) _Query_users(ctx context.Context, field graphql.Coll
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_users_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Users(rctx)
+		return ec.resolvers.Query().Users(rctx, args["limit"].(int), args["offset"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1691,6 +1728,14 @@ func (ec *executionContext) unmarshalInputRegisterUser(ctx context.Context, obj 
 			if err != nil {
 				return it, err
 			}
+		case "password":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
+			it.Password, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -2074,6 +2119,21 @@ func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interf
 
 func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.SelectionSet, v bool) graphql.Marshaler {
 	res := graphql.MarshalBoolean(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
+	res, err := graphql.UnmarshalInt(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	res := graphql.MarshalInt(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")

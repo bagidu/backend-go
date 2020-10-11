@@ -1,5 +1,5 @@
 type Query {
-  users: [User!]!
+  users(limit: Int!, offset: Int!): [User!]!
 }
 
 type Mutation {
