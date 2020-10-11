@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"errors"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -74,7 +75,29 @@ func (s *mongoService) All(limit int, offset int) ([]*User, error) {
 
 // Create ...
 func (s *mongoService) Create(u *User) error {
+
+	ctx := context.Background()
+	uc, err := s.collection().CountDocuments(ctx, bson.M{"$or": []bson.M{
+		{
+			"email": u.Email,
+		},
+		{
+			"username": u.Username,
+		},
+	}})
+
+	if err != nil {
+		return err
+	}
+
+	if uc > 0 {
+		return errors.New("User already exists with same email or username")
+	}
+
 	u.ID = primitive.NewObjectID()
-	_, err := s.collection().InsertOne(context.TODO(), u)
-	return err
+	if _, err := s.collection().InsertOne(context.TODO(), u); err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -151,8 +151,9 @@ func TestCreate(t *testing.T) {
 
 	t.Run("Success on create user", func(t *testing.T) {
 		u := User{
-			Name:  "Sucipto",
-			Email: "email@local.dev",
+			Name:     "Sucipto",
+			Email:    "email@local.dev",
+			Username: "sucipto",
 		}
 		if err := s.Create(&u); err != nil {
 			t.Errorf("Should not error: %s", err.Error())
@@ -169,6 +170,24 @@ func TestCreate(t *testing.T) {
 
 		if uv.Name != u.Name {
 			t.Errorf("Expected result Name is equal, got: %s", uv.Name)
+		}
+	})
+
+	t.Run("Should not able create user with same email", func(t *testing.T) {
+		u := User{
+			Name:     "Lubna",
+			Email:    "lubna@local.dev",
+			Username: "lubna",
+		}
+
+		// First creation
+		if err := s.Create(&u); err != nil {
+			t.Errorf("Should not error: %s", err.Error())
+		}
+
+		// Create again with same payload
+		if err := s.Create(&u); err == nil {
+			t.Errorf("Should error on create with same email")
 		}
 	})
 }
