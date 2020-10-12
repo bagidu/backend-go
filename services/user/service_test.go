@@ -130,12 +130,13 @@ func TestAll(t *testing.T) {
 
 	t.Run("Should return 0", func(t *testing.T) {
 		u, _ := s.All(1, 3)
-		// if e == nil {
-		// 	t.Errorf("Should  error: not found")
-		// }
 
 		if len(u) != 0 {
 			t.Errorf("Expected result 0, got %d", len(u))
+		}
+
+		if _, e := s.All(1, -1); e == nil {
+			t.Errorf("Should  error: not found %v", u)
 		}
 	})
 
