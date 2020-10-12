@@ -192,3 +192,56 @@ func TestCreate(t *testing.T) {
 		}
 	})
 }
+
+func TestUpdate(t *testing.T) {
+	db, mem := setupDB(t)
+	defer mem.Stop()
+
+	// Create Service
+	var s Service = NewUserService(db)
+
+	u := User{
+		Name:     "Sucipto",
+		Username: "sucipto",
+		Email:    "hi@sucipto.id",
+		Password: "secret",
+	}
+
+	t.Run("Test update username", func(t *testing.T) {
+		if e := s.Create(&u); e != nil {
+			t.Errorf("User should created: %s", e.Error())
+		}
+
+		up := User{
+			ID:       u.ID,
+			Username: "sucipto_new",
+		}
+
+		if e := s.Update(&up); e != nil {
+			t.Errorf("Should updated: %s", e.Error())
+		}
+
+		var res User
+		if e := db.Collection("users").FindOne(context.TODO(), bson.M{"_id": up.ID}).Decode(&res); e != nil {
+			t.Errorf("Should no error on find result: %s", e.Error())
+		}
+
+		if up.Username != res.Username {
+			t.Errorf("Username should updated expect: %s got: %s", up.Username, res.Username)
+		}
+
+		if res.Name != "" {
+			t.Errorf("Name should empty got: %s", res.Name)
+		}
+	})
+
+	t.Run("Test update invalid id", func(t *testing.T) {
+		u := User{
+			ID:   primitive.NewObjectID(),
+			Name: "Unauna",
+		}
+		if e := s.Update(&u); e == nil {
+			t.Errorf("Should error on update ivalid id")
+		}
+	})
+}

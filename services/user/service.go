@@ -14,6 +14,7 @@ type Service interface {
 	FindOne(id string) (*User, error)
 	All(limit int, offset int) ([]*User, error)
 	Create(*User) error
+	Update(*User) error
 }
 
 // NewUserService ...
@@ -101,6 +102,25 @@ func (s *mongoService) Create(u *User) error {
 	u.HashPassword()
 	if _, err := s.collection().InsertOne(context.TODO(), u); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// Update ...
+func (s *mongoService) Update(u *User) error {
+	res, err := s.collection().UpdateOne(
+		context.TODO(),
+		bson.M{"_id": u.ID},
+		bson.M{"$set": u},
+	)
+
+	if err != nil {
+		return err
+	}
+
+	if res.ModifiedCount < 1 {
+		return errors.New("User not updated")
 	}
 
 	return nil
