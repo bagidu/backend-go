@@ -5,9 +5,11 @@ package resolver
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/bagiduid/backend/http/graphql/generated"
 	"github.com/bagiduid/backend/models"
+	"github.com/bagiduid/backend/services/mail"
 	"github.com/bagiduid/backend/services/user"
 )
 
@@ -21,6 +23,12 @@ func (r *mutationResolver) Register(ctx context.Context, input models.RegisterUs
 	if err := r.UserService.Create(&u); err != nil {
 		return nil, err
 	}
+
+	r.MailService.Send(&mail.Mail{
+		To:      u.Email,
+		Subject: "Email Verification",
+		Text:    fmt.Sprintf("Hello %s please verify your mail by click this link: %s", u.Name, "https://bagidu.id/verify/codeddddddddddd"),
+	})
 
 	return &models.User{
 		ID:       u.ID.Hex(),

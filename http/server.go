@@ -11,7 +11,9 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/bagiduid/backend/http/graphql/generated"
 	"github.com/bagiduid/backend/http/graphql/resolver"
+	"github.com/bagiduid/backend/services/mail"
 	"github.com/bagiduid/backend/services/user"
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -20,6 +22,9 @@ import (
 const defaultPort = "8080"
 
 func main() {
+	// Load env
+	godotenv.Load()
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort
@@ -41,10 +46,12 @@ func main() {
 
 	// Services
 	userService := user.NewUserService(db)
+	mailService := mail.NewMailgunService()
 
 	// Graphql
 	res := &resolver.Resolver{
 		UserService: userService,
+		MailService: mailService,
 	}
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: res}))
 

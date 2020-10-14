@@ -1,6 +1,9 @@
 package resolver
 
-import "github.com/bagiduid/backend/services/user"
+import (
+	"github.com/bagiduid/backend/services/mail"
+	"github.com/bagiduid/backend/services/user"
+)
 
 // This file will not be regenerated automatically.
 //
@@ -9,4 +12,5 @@ import "github.com/bagiduid/backend/services/user"
 // Resolver ...
 type Resolver struct {
 	UserService user.Service
+	MailService mail.Service
 }
