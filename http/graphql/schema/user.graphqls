@@ -11,3 +11,8 @@ input RegisterUser {
     email: String!
     password: String!
 }
+
+input UserFilter {
+    id: String
+    username: String
+}

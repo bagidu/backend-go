@@ -5,6 +5,7 @@ package resolver
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/bagiduid/backend/http/graphql/generated"
@@ -54,6 +55,26 @@ func (r *queryResolver) Users(ctx context.Context, limit int, offset int) ([]*mo
 		})
 	}
 	return users, nil
+}
+
+func (r *queryResolver) User(ctx context.Context, filter models.UserFilter) (*models.User, error) {
+	if filter.ID != nil {
+		u, e := r.UserService.FindOne(*filter.ID)
+		if e != nil {
+			return nil, e
+		}
+
+		return &models.User{
+			ID:       u.ID.Hex(),
+			Name:     u.Name,
+			Email:    u.Email,
+			Username: u.Username,
+		}, nil
+	} else if filter.Username != nil {
+		return nil, errors.New("Currently unable find user by username")
+	}
+
+	return nil, errors.New("Invalid filter parameter")
 }
 
 // Mutation returns generated.MutationResolver implementation.
