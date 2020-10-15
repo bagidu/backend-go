@@ -1,3 +1,5 @@
+//go:generate mockery --inpackage --name Service
+
 package mail
 
 // Service interface
