@@ -12,4 +12,4 @@ FROM alpine
 RUN apk add --no-cache tzdata
 COPY --from=builder /src/server /app/server
 ENV TZ="Asia/Jakarta"
-CMD /app/bagidu
+CMD /app/server
