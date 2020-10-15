@@ -9,12 +9,13 @@ import (
 
 // User ...
 type User struct {
-	ID        primitive.ObjectID `bson:"_id" json:"id,omitempty"`
-	Name      string             `json:"name,omitempty"`
-	Username  string             `json:"username,omitempty"`
-	Email     string             `json:"email,omitempty"`
-	Password  string             `json:"password,omitempty"`
-	CreatedAt time.Time          `json:"created_at,omitempty"`
+	ID         primitive.ObjectID `bson:"_id" json:"id,omitempty"`
+	Name       string             `json:"name,omitempty"`
+	Username   string             `json:"username,omitempty"`
+	Email      string             `json:"email,omitempty"`
+	Password   string             `json:"password,omitempty"`
+	VerifiedAt *time.Time         `json:"verified_at,omitempty"`
+	CreatedAt  time.Time          `json:"created_at,omitempty"`
 }
 
 // HashPassword hash password before save
