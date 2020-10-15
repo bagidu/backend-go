@@ -3,6 +3,8 @@ type User {
     name: String!
     username: String!
     email: String!
+    verified_at: Time
+    created_at: Time!
 }
 
 input RegisterUser {
@@ -16,3 +18,5 @@ input UserFilter {
     id: String
     username: String
 }
+
+scalar Time

@@ -2,6 +2,10 @@
 
 package models
 
+import (
+	"time"
+)
+
 type RegisterUser struct {
 	Name     string `json:"name"`
 	Username string `json:"username"`
@@ -10,10 +14,12 @@ type RegisterUser struct {
 }
 
 type User struct {
-	ID       string `json:"id"`
-	Name     string `json:"name"`
-	Username string `json:"username"`
-	Email    string `json:"email"`
+	ID         string     `json:"id"`
+	Name       string     `json:"name"`
+	Username   string     `json:"username"`
+	Email      string     `json:"email"`
+	VerifiedAt *time.Time `json:"verified_at"`
+	CreatedAt  time.Time  `json:"created_at"`
 }
 
 type UserFilter struct {

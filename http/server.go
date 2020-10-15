@@ -8,11 +8,16 @@ import (
 	"time"
 
 	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/handler/extension"
+	"github.com/99designs/gqlgen/graphql/handler/lru"
+	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/bagiduid/backend/http/graphql/generated"
 	"github.com/bagiduid/backend/http/graphql/resolver"
 	"github.com/bagiduid/backend/services/mail"
 	"github.com/bagiduid/backend/services/user"
+	"github.com/go-chi/chi"
+	"github.com/go-chi/jwtauth"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -25,6 +30,11 @@ func main() {
 	startTime := time.Now()
 	// Load env
 	godotenv.Load()
+	debug := os.Getenv("DEBUG")
+	key := os.Getenv("APP_SECRET")
+
+	// JWT
+	jwt := jwtauth.New("HS256", []byte(key), nil)
 
 	// Port
 	port := os.Getenv("PORT")
@@ -60,14 +70,36 @@ func main() {
 	res := &resolver.Resolver{
 		UserService: userService,
 		MailService: mailService,
+		JWT:         jwt,
 	}
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: res}))
 
-	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	http.Handle("/query", srv)
+	srv := handler.New(generated.NewExecutableSchema(generated.Config{Resolvers: res}))
+	srv.AddTransport(transport.Options{})
+	// srv.AddTransport(transport.GET{})
+	srv.AddTransport(transport.POST{})
+	srv.AddTransport(transport.MultipartForm{})
+
+	srv.SetQueryCache(lru.New(1000))
+
+	srv.Use(extension.AutomaticPersistedQuery{
+		Cache: lru.New(100),
+	})
+
+	// Http Server
+	router := chi.NewRouter()
+
+	// JWT Middleware
+	router.Use(jwtauth.Verifier(jwt))
+
+	if debug == "TRUE" {
+		srv.Use(extension.Introspection{})
+		router.Handle("/playground", playground.Handler("GraphQL playground", "/"))
+	}
+
+	router.Handle("/", srv)
 
 	elapsed := time.Since(startTime)
 	log.Printf("Startup took %s", elapsed)
 
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	log.Fatal(http.ListenAndServe(":"+port, router))
 }

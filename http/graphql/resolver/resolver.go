@@ -3,6 +3,7 @@ package resolver
 import (
 	"github.com/bagiduid/backend/services/mail"
 	"github.com/bagiduid/backend/services/user"
+	"github.com/go-chi/jwtauth"
 )
 
 // This file will not be regenerated automatically.
@@ -13,4 +14,5 @@ import (
 type Resolver struct {
 	UserService user.Service
 	MailService mail.Service
+	JWT         *jwtauth.JWTAuth
 }
