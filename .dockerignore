@@ -1,0 +1,10 @@
+.git/
+.env
+.env.example
+tmp/
+.github/
+gqlgen.yml
+*.out
+*.run
+Dockerfile
+.air.toml

@@ -22,18 +22,26 @@ import (
 const defaultPort = "8080"
 
 func main() {
+	startTime := time.Now()
 	// Load env
 	godotenv.Load()
 
+	// Port
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort
 	}
 
+	// MONGODB
+	mongoURL := os.Getenv("MONGODB_URL")
+	if mongoURL == "" {
+		panic("MONGODB_URL not set properly")
+	}
+
 	// Init Mongo
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost"))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURL))
 	if err != nil {
 		log.Fatal("Unable to connect mongo db")
 	}
@@ -58,6 +66,8 @@ func main() {
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	http.Handle("/query", srv)
 
-	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
+	elapsed := time.Since(startTime)
+	log.Printf("Startup took %s", elapsed)
+
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
