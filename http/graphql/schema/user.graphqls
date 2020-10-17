@@ -7,6 +7,13 @@ type User {
     created_at: Time!
 }
 
+type UserLogin {
+    user: User!
+    refresh_token: String!
+    access_token: String!
+    expired: Int!
+}
+
 input RegisterUser {
     name: String!
     username: String!

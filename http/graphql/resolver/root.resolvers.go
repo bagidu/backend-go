@@ -5,9 +5,11 @@ package resolver
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"time"
 
 	"github.com/bagiduid/backend/http/graphql/generated"
@@ -86,6 +88,41 @@ func (r *mutationResolver) VerifyEmail(ctx context.Context, code string) (*model
 	}, nil
 }
 
+func (r *mutationResolver) Login(ctx context.Context, username string, password string) (*models.UserLogin, error) {
+	u, e := r.UserService.FindBy("username", username)
+	if e != nil {
+		return nil, e
+	}
+
+	if e := u.CheckPassword(password); e != nil {
+		return nil, errors.New("Username & password not match")
+	}
+
+	// Generate token
+	_, accToken, err := r.JWT.Encode(jwt.MapClaims{
+		"exp": time.Now().Add(30 * time.Minute).Unix(),
+		"iat": time.Now().Unix(),
+		"sub": "access_token",
+		"uid": u.ID.Hex(),
+	})
+
+	if err != nil {
+		return nil, errors.New("Unable generate token")
+	}
+
+	return &models.UserLogin{
+		User: &models.User{
+			ID:         u.ID.Hex(),
+			CreatedAt:  u.CreatedAt,
+			Email:      u.Email,
+			Name:       u.Name,
+			Username:   u.Username,
+			VerifiedAt: u.VerifiedAt,
+		},
+		AccessToken: accToken,
+	}, nil
+}
+
 func (r *queryResolver) Users(ctx context.Context, limit int, offset int) ([]*models.User, error) {
 	res, err := r.UserService.All(limit, offset)
 	if err != nil {
@@ -126,6 +163,36 @@ func (r *queryResolver) User(ctx context.Context, filter models.UserFilter) (*mo
 	}
 
 	return nil, errors.New("Invalid filter parameter")
+}
+
+func (r *queryResolver) Me(ctx context.Context) (*models.User, error) {
+	u, e := GetUser(ctx, r.UserService)
+
+	if e != nil {
+		return nil, fmt.Errorf("Unauthenticated: %s", e.Error())
+	}
+
+	return &models.User{
+		ID:         u.ID.Hex(),
+		Name:       u.Name,
+		Email:      u.Email,
+		Username:   u.Username,
+		VerifiedAt: u.VerifiedAt,
+		CreatedAt:  u.CreatedAt,
+	}, nil
+}
+
+func (r *queryResolver) System(ctx context.Context) (*models.SystemInfo, error) {
+	resp, err := http.Get("https://api.myip.com")
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var sys models.SystemInfo
+	json.NewDecoder(resp.Body).Decode(&sys)
+
+	return &sys, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.

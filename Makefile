@@ -1,5 +1,7 @@
 build:
 	@go build -o server.run ./http
+gen: 
+	@go generate ./...
 test:
 	@go test ./... -cover
 cover:

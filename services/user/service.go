@@ -14,6 +14,7 @@ import (
 // Service user
 type Service interface {
 	FindOne(id string) (*User, error)
+	FindBy(field string, val string) (*User, error)
 	All(limit int, offset int) ([]*User, error)
 	Create(*User) error
 	Update(*User) error
@@ -41,6 +42,16 @@ func (s *mongoService) FindOne(id string) (*User, error) {
 
 	var user User
 	if err := s.collection().FindOne(context.TODO(), bson.M{"_id": uid}).Decode(&user); err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+// FindBy ...
+func (s *mongoService) FindBy(field string, keyword string) (*User, error) {
+	var user User
+	if err := s.collection().FindOne(context.Background(), bson.M{field: keyword}).Decode(&user); err != nil {
 		return nil, err
 	}
 

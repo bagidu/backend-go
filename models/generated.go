@@ -13,6 +13,12 @@ type RegisterUser struct {
 	Password string `json:"password"`
 }
 
+type SystemInfo struct {
+	IP      string `json:"ip"`
+	Country string `json:"country"`
+	Cc      string `json:"cc"`
+}
+
 type User struct {
 	ID         string     `json:"id"`
 	Name       string     `json:"name"`
@@ -25,4 +31,11 @@ type User struct {
 type UserFilter struct {
 	ID       *string `json:"id"`
 	Username *string `json:"username"`
+}
+
+type UserLogin struct {
+	User         *User  `json:"user"`
+	RefreshToken string `json:"refresh_token"`
+	AccessToken  string `json:"access_token"`
+	Expired      int    `json:"expired"`
 }

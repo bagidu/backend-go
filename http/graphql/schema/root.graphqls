@@ -1,9 +1,18 @@
 type Query {
   users(limit: Int!, offset: Int!): [User!]!
   user(filter: UserFilter!): User!
+  me: User!
+  system: SystemInfo!
 }
 
 type Mutation {
   register(input: RegisterUser!): User!
   verifyEmail(code: String!): User!
+  login(username:String!, password:String!): UserLogin!
+}
+
+type SystemInfo {
+  ip:String!
+  country:String!
+  cc:String!
 }

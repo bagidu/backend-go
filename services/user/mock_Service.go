@@ -46,6 +46,29 @@ func (_m *MockService) Create(_a0 *User) error {
 	return r0
 }
 
+// FindBy provides a mock function with given fields: field, val
+func (_m *MockService) FindBy(field string, val string) (*User, error) {
+	ret := _m.Called(field, val)
+
+	var r0 *User
+	if rf, ok := ret.Get(0).(func(string, string) *User); ok {
+		r0 = rf(field, val)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*User)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string, string) error); ok {
+		r1 = rf(field, val)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindOne provides a mock function with given fields: id
 func (_m *MockService) FindOne(id string) (*User, error) {
 	ret := _m.Called(id)
