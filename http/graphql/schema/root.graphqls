@@ -9,6 +9,7 @@ type Mutation {
   register(input: RegisterUser!): User!
   verifyEmail(code: String!): User!
   login(username:String!, password:String!): UserLogin!
+  changePassword(oldPassword:String!, newPassword:String!):String!
 }
 
 type SystemInfo {

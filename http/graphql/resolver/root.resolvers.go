@@ -123,6 +123,28 @@ func (r *mutationResolver) Login(ctx context.Context, username string, password 
 	}, nil
 }
 
+func (r *mutationResolver) ChangePassword(ctx context.Context, oldPassword string, newPassword string) (string, error) {
+
+	u, e := GetUser(ctx, r.UserService)
+
+	if e != nil {
+		return "Unauthenticated!", fmt.Errorf("Unauthenticated: %s", e.Error())
+	}
+
+	if e := u.CheckPassword(oldPassword); e != nil {
+		return "Wrong password!", fmt.Errorf("wrong password")
+	}
+
+	u.Password = newPassword
+
+	u.HashPassword()
+	if err := r.UserService.Update(u); err != nil {
+		return "", errors.New("Unable to update user password")
+	}
+
+	return "Password changed", nil
+}
+
 func (r *queryResolver) Users(ctx context.Context, limit int, offset int) ([]*models.User, error) {
 	res, err := r.UserService.All(limit, offset)
 	if err != nil {
