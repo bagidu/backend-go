@@ -13,6 +13,4 @@ type Mutation {
 
 type SystemInfo {
   ip:String!
-  country:String!
-  cc:String!
 }

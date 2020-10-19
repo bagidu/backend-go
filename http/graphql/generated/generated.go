@@ -58,9 +58,7 @@ type ComplexityRoot struct {
 	}
 
 	SystemInfo struct {
-		Cc      func(childComplexity int) int
-		Country func(childComplexity int) int
-		IP      func(childComplexity int) int
+		IP func(childComplexity int) int
 	}
 
 	User struct {
@@ -180,20 +178,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Users(childComplexity, args["limit"].(int), args["offset"].(int)), true
-
-	case "SystemInfo.cc":
-		if e.complexity.SystemInfo.Cc == nil {
-			break
-		}
-
-		return e.complexity.SystemInfo.Cc(childComplexity), true
-
-	case "SystemInfo.country":
-		if e.complexity.SystemInfo.Country == nil {
-			break
-		}
-
-		return e.complexity.SystemInfo.Country(childComplexity), true
 
 	case "SystemInfo.ip":
 		if e.complexity.SystemInfo.IP == nil {
@@ -351,8 +335,6 @@ type Mutation {
 
 type SystemInfo {
   ip:String!
-  country:String!
-  cc:String!
 }`, BuiltIn: false},
 	{Name: "http/graphql/schema/user.graphqls", Input: `type User {
     id: String!
@@ -906,76 +888,6 @@ func (ec *executionContext) _SystemInfo_ip(ctx context.Context, field graphql.Co
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.IP, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _SystemInfo_country(ctx context.Context, field graphql.CollectedField, obj *models.SystemInfo) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "SystemInfo",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Country, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _SystemInfo_cc(ctx context.Context, field graphql.CollectedField, obj *models.SystemInfo) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "SystemInfo",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Cc, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2646,16 +2558,6 @@ func (ec *executionContext) _SystemInfo(ctx context.Context, sel ast.SelectionSe
 			out.Values[i] = graphql.MarshalString("SystemInfo")
 		case "ip":
 			out.Values[i] = ec._SystemInfo_ip(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "country":
-			out.Values[i] = ec._SystemInfo_country(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "cc":
-			out.Values[i] = ec._SystemInfo_cc(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}

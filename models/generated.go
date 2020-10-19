@@ -14,9 +14,7 @@ type RegisterUser struct {
 }
 
 type SystemInfo struct {
-	IP      string `json:"ip"`
-	Country string `json:"country"`
-	Cc      string `json:"cc"`
+	IP string `json:"ip"`
 }
 
 type User struct {

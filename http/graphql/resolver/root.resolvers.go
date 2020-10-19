@@ -5,9 +5,9 @@ package resolver
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
@@ -183,16 +183,17 @@ func (r *queryResolver) Me(ctx context.Context) (*models.User, error) {
 }
 
 func (r *queryResolver) System(ctx context.Context) (*models.SystemInfo, error) {
-	resp, err := http.Get("https://api.myip.com")
+	resp, err := http.Get("https://api.ipify.org/")
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 
-	var sys models.SystemInfo
-	json.NewDecoder(resp.Body).Decode(&sys)
+	ip, err := ioutil.ReadAll(resp.Body)
 
-	return &sys, nil
+	return &models.SystemInfo{
+		IP: string(ip),
+	}, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.
