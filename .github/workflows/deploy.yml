@@ -40,3 +40,6 @@ jobs:
           --image "gcr.io/$PROJECT_ID/$SERVICE_NAME:latest" \
           --platform "managed" \
           --allow-unauthenticated
+
+    - name: Cleanup
+      run: gsutil rm -r gs://${PROJECT_ID}_cloudbuild
